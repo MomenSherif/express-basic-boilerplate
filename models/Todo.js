@@ -14,6 +14,11 @@ const todoSchema = new mongoose.Schema(
       maxlength: [20, 'Title must be between 10 & 20 characters!'],
       required: [true, 'You must supply title!'],
     },
+    status: {
+      type: String,
+      trim: true,
+      default: 'to-do',
+    },
     tags: [
       {
         type: String,

@@ -1,3 +1,5 @@
+const { validationResult } = require('express-validator');
+
 // Wrapper for Async functions
 const catchErrors = (fn) => {
   return (req, res, next) => {
@@ -22,7 +24,7 @@ const validationErrorHandler = (err, req, res, next) => {
     return acc;
   }, {});
 
-  res.send({ errors });
+  res.status(400).send({ errors });
 };
 
 /**
@@ -41,9 +43,26 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
+const expressValidatorErrorHandler = (req, res, next) => {
+  const err = validationResult(req);
+
+  if (!err.isEmpty()) {
+    err.errors = err.errors.reduce((acc, err) => {
+      acc[err.param] = {
+        message: err.msg,
+      };
+      return acc;
+    }, {});
+    return next(err);
+  }
+
+  next();
+};
+
 module.exports = {
   catchErrors,
   validationErrorHandler,
   errorHandler,
   notFoundHandler,
+  expressValidatorErrorHandler,
 };

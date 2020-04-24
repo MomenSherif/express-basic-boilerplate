@@ -11,11 +11,7 @@ const notFoundTodoError = () => {
 };
 
 const createTodo = async (req, res, next) => {
-  const user = await User.findOne({ username: req.body.username });
-
-  if (!user) return next(notFoundUserError());
-
-  req.body.userId = user._id;
+  req.body.userId = req.user._id;
   const todo = new Todo(req.body);
   await todo.save();
   res.send(todo);
@@ -38,17 +34,25 @@ const getTodos = async (req, res) => {
 };
 
 const deleteTodo = async (req, res, next) => {
-  const todo = await Todo.findByIdAndDelete(req.params.id);
+  const todo = await Todo.findOneAndDelete({
+    _id: req.params.id,
+    userId: req.user._id,
+  });
   if (!todo) return next(notFoundTodoError());
 
   res.send({ message: 'Deleted Successfully ✌' });
 };
 
 const updateTodo = async (req, res, next) => {
-  const todo = await Todo.findOneAndUpdate(req.params.id, req.body, {
-    runValidators: true,
-    new: true,
-  });
+  const todo = await Todo.findOneAndUpdate(
+    { _id: req.params.id, userId: req.user._id },
+    req.body,
+    {
+      runValidators: true,
+      new: true,
+    }
+  );
+
   if (!todo) return next(notFoundTodoError());
 
   res.send({ message: 'Updated Successfully ✌' });

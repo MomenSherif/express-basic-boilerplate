@@ -1,5 +1,6 @@
 const express = require('express');
 const { catchErrors } = require('../handlers/error');
+const { authenticate } = require('../middlewares/auth');
 const {
   createTodo,
   getTodosByUserID,
@@ -12,12 +13,12 @@ const router = express.Router();
 
 router.get('/', catchErrors(getTodos));
 
-router.post('/', catchErrors(createTodo));
+router.post('/', authenticate, catchErrors(createTodo));
 
-router.get('/:userId', catchErrors(getTodosByUserID));
+router.get('/:userId', authenticate, catchErrors(getTodosByUserID));
 
-router.delete('/:id', catchErrors(deleteTodo));
+router.delete('/:id', authenticate, catchErrors(deleteTodo));
 
-router.patch('/:id', catchErrors(updateTodo));
+router.patch('/:id', authenticate, catchErrors(updateTodo));
 
 module.exports = router;

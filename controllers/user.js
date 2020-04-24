@@ -16,8 +16,7 @@ const createUser = async (req, res) => {
 
 const loginUser = async (req, res, next) => {
   const { username, password } = req.body;
-  const user = await User.findOne({ username, password }).populate('todos');
-  const todos = await Todo.find({ userId: user._id }).populate('userId');
+  const user = await User.findByCredentials({ username, password });
 
   if (!user) {
     const err = new Error('Invalid credentials');
@@ -25,7 +24,12 @@ const loginUser = async (req, res, next) => {
     return next(err);
   }
 
-  res.send({ message: 'Logged in successfully ✌', username, todos });
+  const tokenPromise = user.generateAuthToken();
+  const todosPromise = Todo.find({ userId: user._id }).populate('userId');
+
+  const [token, todos] = await Promise.all([tokenPromise, todosPromise]);
+
+  res.send({ message: 'Logged in successfully ✌', username, todos, token });
 };
 
 const getUsers = async (req, res) => {
@@ -34,20 +38,15 @@ const getUsers = async (req, res) => {
 };
 
 const deleteUser = async (req, res, next) => {
-  const user = await User.findByIdAndDelete(req.params.id);
-  if (!user) return next(notFoundUserError());
-
+  await req.user.remove();
   res.send({ message: 'Deleted successfully ✌' });
 };
-
 const updateUser = async (req, res, next) => {
-  const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-    runValidators: true,
-    new: true,
-  });
-  if (!user) return next(notFoundUserError());
-
-  res.send({ message: 'User was edited successfully ✌', user });
+  const updates = Object.keys(req.body);
+  // to run mongoose pre save middleware, good for password updates
+  updates.forEach((update) => (req.user[update] = req.body[update]));
+  await req.user.save();
+  res.send({ message: 'User was edited successfully ✌', user: req.user });
 };
 
 module.exports = {
