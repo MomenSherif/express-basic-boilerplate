@@ -1,16 +1,7 @@
 const Todo = require('../models/Todo');
-const User = require('../models/User');
+const customError = require('../helper/customError');
 
-// TODO: add to Utils as function('error msg')
-const { notFoundUserError } = require('./user');
-
-const notFoundTodoError = () => {
-  const err = new Error('No such todo with that id!');
-  err.statusCode = 404;
-  return err;
-};
-
-const createTodo = async (req, res, next) => {
+const createTodo = async (req, res) => {
   req.body.userId = req.user._id;
   const todo = new Todo(req.body);
   await todo.save();
@@ -38,7 +29,9 @@ const deleteTodo = async (req, res, next) => {
     _id: req.params.id,
     userId: req.user._id,
   });
-  if (!todo) return next(notFoundTodoError());
+
+  // TODO: should be moved to middleware
+  if (!todo) return next(new customError(404, 'No such todo with that id! 🙄'));
 
   res.send({ message: 'Deleted Successfully ✌' });
 };
@@ -53,7 +46,7 @@ const updateTodo = async (req, res, next) => {
     }
   );
 
-  if (!todo) return next(notFoundTodoError());
+  if (!todo) return next(new customError(404, 'No such todo with that id! 🙄'));
 
   res.send({ message: 'Updated Successfully ✌' });
 };

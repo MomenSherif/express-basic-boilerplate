@@ -1,11 +1,6 @@
 const User = require('../models/User');
 const Todo = require('../models/Todo');
-
-const notFoundUserError = () => {
-  const err = new Error('No such user with that id!');
-  err.statusCode = 404;
-  return err;
-};
+const customError = require('../helper/customError');
 
 const createUser = async (req, res) => {
   const user = new User(req.body);
@@ -18,11 +13,7 @@ const loginUser = async (req, res, next) => {
   const { username, password } = req.body;
   const user = await User.findByCredentials({ username, password });
 
-  if (!user) {
-    const err = new Error('Invalid credentials');
-    err.statusCode = 401;
-    return next(err);
-  }
+  if (!user) return next(new customError(401, 'Invalid Credentials'));
 
   const tokenPromise = user.generateAuthToken();
   const todosPromise = Todo.find({ userId: user._id }).populate('userId');
@@ -37,11 +28,11 @@ const getUsers = async (req, res) => {
   res.send(users);
 };
 
-const deleteUser = async (req, res, next) => {
+const deleteUser = async (req, res) => {
   await req.user.remove();
   res.send({ message: 'Deleted successfully ✌' });
 };
-const updateUser = async (req, res, next) => {
+const updateUser = async (req, res) => {
   const updates = Object.keys(req.body);
   // to run mongoose pre save middleware, good for password updates
   updates.forEach((update) => (req.user[update] = req.body[update]));
@@ -55,5 +46,4 @@ module.exports = {
   getUsers,
   deleteUser,
   updateUser,
-  notFoundUserError,
 };

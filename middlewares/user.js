@@ -1,18 +1,16 @@
 const { body } = require('express-validator');
-const { expressValidatorErrorHandler } = require('../handlers/error');
+const validateRequest = require('../middlewares/validateRequest');
 
-const validateRegisterationCredentials = [
+const validateRegisterationCredentials = validateRequest([
   body('password').notEmpty().withMessage('password must be provided!'),
   body('username').notEmpty().withMessage('username must be provided!'),
   body('firstName').notEmpty().withMessage('firstName must be provided!'),
-  expressValidatorErrorHandler,
-];
+]);
 
-const validateLoginCredentials = [
+const validateLoginCredentials = validateRequest([
   body('password').notEmpty().withMessage('password must be provided!'),
   body('username').notEmpty().withMessage('username must be provided!'),
-  expressValidatorErrorHandler,
-];
+]);
 
 module.exports = {
   validateRegisterationCredentials,

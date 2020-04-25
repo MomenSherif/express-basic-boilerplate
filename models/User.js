@@ -3,7 +3,7 @@ const uniqueValidator = require('mongoose-unique-validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
-const { jwtSecretKey } = require('../env');
+const { jwtSecretKey } = require('../config');
 
 const jwtSign = promisify(jwt.sign);
 

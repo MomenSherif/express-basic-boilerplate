@@ -43,26 +43,9 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-const expressValidatorErrorHandler = (req, res, next) => {
-  const err = validationResult(req);
-
-  if (!err.isEmpty()) {
-    err.errors = err.errors.reduce((acc, err) => {
-      acc[err.param] = {
-        message: err.msg,
-      };
-      return acc;
-    }, {});
-    return next(err);
-  }
-
-  next();
-};
-
 module.exports = {
   catchErrors,
   validationErrorHandler,
   errorHandler,
   notFoundHandler,
-  expressValidatorErrorHandler,
 };
